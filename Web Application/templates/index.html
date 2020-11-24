@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Creating Real-Time Charts with Flask</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid" >
+	<div class="row">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-body">
+					<canvas id="power" width="1000px" height="200px"></canvas> 
+                    <canvas id="azimuth angle" width="1000px" height="180px"></canvas>
+					<canvas id="tilt angle" width="1000px" height="200px"></canvas>
+                </div>
+            </div>
+        </div>
+		<div class="col-md-2">
+            <div class="card">
+                <div class="card-body">
+					<canvas id="Ho" width="200px" height="200px"></canvas> 
+					<div id="chart_div" width="200px" height="200px"></div> 
+					<canvas id="tilt angle" width="200px" height="200px"></canvas>
+				</div>
+			</div>
+		</div>
+    </div>
+</div>
+<!--suppress JSUnresolvedLibraryURL -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+<!--suppress JSUnresolvedLibraryURL -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<!--suppress JSUnresolvedLibraryURL -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+<script>
+    $(document).ready(function () {
+        const config = {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    labe1: "Digital Twin Output",
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: [],
+                    fill: false,
+                },
+				{
+                    label: "Solar Farm Output",
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: [],
+                    fill: false,
+                }				
+				],
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: false,
+                    text: 'Creating Real-Time Charts with Flask'
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                layout:{
+					padding:{
+						left:0,
+						right:50,
+						top:0,
+						bottom:0
+						}
+					},
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                },
+                scales: {
+                    xAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Time'
+                        }
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'power[kW]'
+                        }
+                    }]
+                }
+            }
+        };
+
+        const context = document.getElementById('power').getContext('2d');
+
+        const lineChart = new Chart(context, config);
+
+        const source = new EventSource("/realtime");
+
+        source.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            if (config.data.labels.length ===10) {
+                config.data.labels.shift();
+                config.data.datasets[0].data.shift();
+            }
+            config.data.labels.push(data["twin_output"].date_time);
+            config.data.datasets[0].data.push(data["twin_output"].P);
+            lineChart.update();
+        }
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        const config = {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Azimuth Angle",
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: [],
+                    fill: false,
+                }],
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: false,
+                    text: 'Creating Real-Time Charts with Flask'
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                layout:{
+					padding:{
+						left:0,
+						right:50,
+						top:0,
+						bottom:0
+						}
+					},
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                },
+                scales: {
+                    xAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Time'
+                        }
+                    }],
+                    yAxes: [{
+                        display: true,
+						ticks: {
+						beginATzero:false,
+						max:95,
+						min:-95,
+						},
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Azimuth[deg]'
+                        }
+                    }]
+                }
+            }
+        };
+
+        const context = document.getElementById('azimuth angle').getContext('2d');
+
+        const lineChart = new Chart(context, config);
+
+        const source = new EventSource("/realtime");
+
+        source.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            if (config.data.labels.length === 10) {
+                config.data.labels.shift();
+                config.data.datasets[0].data.shift();
+            }
+            config.data.labels.push(data["twin_output"].date_time);
+            config.data.datasets[0].data.push(data["twin_output"].Azimuth);
+            lineChart.update();
+        }
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        const config = {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Tilt Angle",
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: [],
+                    fill: false,
+                }],
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: false,
+                    text: 'Creating Real-Time Charts with Flask'
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                layout:{
+					padding:{
+						left:0,
+						right:0,
+						top:0,
+						bottom:0
+						}
+					},   
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                },
+                scales: {
+                    xAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: false,
+                            labelString: 'Time'
+                        }
+                    }],
+                    yAxes: [{
+                        display: true,
+						ticks: {
+						beginATzero:true,
+						max:95,
+						min:0,
+						},
+					 scaleLabel: {
+                            display: true,
+                            labelString: 'Tilt[deg]'
+                        }
+                       }]
+                }
+            }
+        };
+
+        const context = document.getElementById('tilt angle').getContext('2d');
+
+        const lineChart = new Chart(context, config);
+
+        const source = new EventSource("/realtime");
+
+        source.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            if (config.data.labels.length === 10) {
+                config.data.labels.shift();
+                config.data.datasets[0].data.shift();
+            }
+            config.data.labels.push(data["twin_output"].date_time);
+            config.data.datasets[0].data.push(data["twin_output"].Tilt);
+            lineChart.update();
+        }
+    });
+</script>
+</body>
+</html>

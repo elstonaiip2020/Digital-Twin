@@ -20,7 +20,7 @@ def mtime(times,flag):
         times=start
         flag=1
     else:
-        times=times + pd.to_timedelta(1,unit='H')+ pd.to_timedelta(np.random.randint(1,20),unit='m')
+        times=times + pd.to_timedelta(1,unit='H')
     output=[times,flag]
     return output
     

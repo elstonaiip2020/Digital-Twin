@@ -76,4 +76,4 @@ def titled_radiation(Ho,theta,phi):
 def pv_power(Ht):
     A=1000
     mu=0.30
-    return A*Ht*mu  
+    return A*Ht*mu/1000
